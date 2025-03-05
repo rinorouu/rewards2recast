@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@thirdweb-dev/contracts/extension/PermissionsEnumerable.sol";
 
-contract P2L is PermissionsEnumerable {
+contract R2R is PermissionsEnumerable {
     struct Campaign {
         address advertiser;
         uint256 budget;
@@ -19,10 +19,8 @@ contract P2L is PermissionsEnumerable {
     event CampaignCreated(uint256 indexed campaignId, address advertiser);
     event RewardClaimed(uint256 indexed campaignId, address participant);
 
-    // Fee platform (2%)
     uint256 public constant FEE_PERCENT = 2;
 
-    // Membuat campaign baru
     function createCampaign(
         uint256 _budget,
         uint256 _rewardPerUser,
@@ -45,14 +43,12 @@ contract P2L is PermissionsEnumerable {
         emit CampaignCreated(campaignId, msg.sender);
     }
 
-    // Klaim hadiah oleh peserta
     function claimReward(uint256 _campaignId) external {
         Campaign storage campaign = campaigns[_campaignId];
-        require(block.timestamp <= campaign.deadline, "Campaign sudah berakhir");
-        require(campaign.participants.length < campaign.maxParticipants, "Kuota habis");
-        require(!_hasParticipated(_campaignId, msg.sender), "Sudah klaim");
+        require(block.timestamp <= campaign.deadline, "Campaign has ended");
+        require(campaign.participants.length < campaign.maxParticipants, "All rewards have been claimed");
+        require(!_hasParticipated(_campaignId, msg.sender), "Already claimed");
 
-        // Transfer reward ke peserta (98% setelah fee)
         uint256 fee = (campaign.rewardPerUser * FEE_PERCENT) / 100;
         uint256 reward = campaign.rewardPerUser - fee;
 
